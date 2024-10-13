@@ -5,9 +5,10 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/cors"
+	// "github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -19,14 +20,17 @@ type Blog struct {
 	ID      primitive.ObjectID `json:"_id,omitempty" bson:"_id,omitempty"`
 	Title   string             `json:"title"`
 	Content string             `json:"content"`
+	Date    time.Time          `json:"date"`
 }
 
 var collection *mongo.Collection
 
 func main() {
 	err := godotenv.Load(".env")
-	if err != nil {
-		log.Fatal("Error loading environment variables : ", err)
+	if os.Getenv("ENV") != "production" {
+		if err != nil {
+			log.Fatal("Error loading environment variables : ", err)
+		}
 	}
 
 	MONGO_URI := os.Getenv("MONGODB_URI")
@@ -43,15 +47,18 @@ func main() {
 	fmt.Println("MONGODB connection successfully")
 	collection = client.Database("golang_blog_db").Collection("Blogs")
 	app := fiber.New()
-	app.Use(cors.New(cors.Config{
-		AllowOrigins: "http://localhost:5173/",
-		AllowHeaders: "Origin, Content-Type, Accept",
-	}))
+	// app.Use(cors.New(cors.Config{
+	// 	AllowOrigins: "http://localhost:5173/",
+	// 	AllowHeaders: "Origin, Content-Type, Accept",
+	// }))
 	app.Get("/api/post/", getAllPosts)
 	app.Get("/api/post/:id", getPost)
 	app.Post("/api/post/", createPost)
 	app.Patch("/api/post/:id", updatePost)
 	app.Delete("/api/post/:id", deletePost)
+	if os.Getenv("ENV") == "production" {
+		app.Static("/", "./client/dist")
+	}
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "4411"
