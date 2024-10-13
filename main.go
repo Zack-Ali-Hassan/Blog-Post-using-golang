@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"time"
 
 	"github.com/gofiber/fiber/v2"
 	// "github.com/gofiber/fiber/v2/middleware/cors"
@@ -20,7 +19,6 @@ type Blog struct {
 	ID      primitive.ObjectID `json:"_id,omitempty" bson:"_id,omitempty"`
 	Title   string             `json:"title"`
 	Content string             `json:"content"`
-	Date    time.Time          `json:"date"`
 }
 
 var collection *mongo.Collection
