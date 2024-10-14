@@ -1,22 +1,30 @@
+import axios from 'axios';
 import React, { useState } from 'react';
+import toast from 'react-hot-toast';
+import { BASE_URL } from '../App';
 
-const CreatePost = ({ addPost }) => {
+const CreatePost = ({getPosts}) => {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
     
-    const newPost = {
-      id: Date.now(), // Simple unique ID based on current time
-      title,
-      content,
-    };
-    
-    addPost(newPost); // Add the new post
+    const createPost = async ()=>{
+      try {
+        const {result} = await axios.post(BASE_URL + "/post",{title : title, content: content})
+        toast.success("Inserted successfully")
+        console.log("Creating Post result are: ", result)
+        getPosts()
+      } catch (error) {
+        console.log("Error from frontend in creating post: ", error);
+        toast.error("Error.....")
+      }
+     
+    }
+    createPost()
     setTitle('');
     setContent('');
-    alert('Post created successfully!');
   };
 
   return (
