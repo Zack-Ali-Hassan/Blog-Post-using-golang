@@ -19,34 +19,46 @@ const Home = ({ posts, getPosts }) => {
 
   const handleUpdateSubmit = (e) => {
     e.preventDefault();
-    // Here you would send the updated post to the server, but for now, just log it
-    console.log("Updated Post:", {
-      id: selectedPost.id,
-      title: updatedTitle,
-      content: updatedContent,
-    });
-    // Close the modal after updating
-    const updateModal = bootstrap.Modal.getInstance(
-      document.getElementById("updateModal")
-    );
-    updateModal.hide();
-  };
-  const handleUpdate = (postId) => {
-    if (confirm(`Are you sure you want to update this post id: ${postId}`)) {
-      console.log(`Update post with ID: ${postId}`);
-    }
+    try {
+      const updatePost = async () => {
+        const result = await axios.patch(
+          BASE_URL + `/post/${selectedPost._id}`,
+          {
+            title: updatedTitle,
+            content: updatedContent,
+          }
+        );
+        toast.success("Updated post successfully");
+        console.log(result);
+        getPosts();
+      };
+      if (confirm(`Are you sure you want to update this post id: ${selectedPost._id}`)) {
+        updatePost()
+        
+      }
+    
+      // Close the modal after updating
+      const updateModal = bootstrap.Modal.getInstance(
+        document.getElementById("updateModal")
+      );
+      updateModal.hide();
+    } catch (error) { toast.error("Error updating post....");
+      console.log("Error from frontend in updating post: ", error);}
+
+   
   };
 
   const handleDelete = (postId) => {
-    if (confirm(`Are you sure you want to update this post id: ${postId}`)) {
+    if (confirm(`Are you sure you want to delete this post id: ${postId}`)) {
       try {
         const deletePost = async () => {
           const { result } = await axios.delete(BASE_URL + `/post/${postId}`);
           toast.success("Deleted post successfully");
           console.log(result);
+          getPosts();
         };
         deletePost();
-        getPosts();
+       
       } catch (error) {
         toast.error("Error deleting post....");
         console.log("Error from frontend in deleting post: ", error);
