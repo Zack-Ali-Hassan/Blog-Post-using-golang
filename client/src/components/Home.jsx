@@ -28,7 +28,7 @@ const Home = ({ posts, getPosts }) => {
             content: updatedContent,
           }
         );
-        toast.success("Updated post successfully");
+        toast.success(result.data.msg);
         console.log(result);
         getPosts();
       };
@@ -43,7 +43,7 @@ const Home = ({ posts, getPosts }) => {
       );
       updateModal.hide();
     } catch (error) { toast.error("Error updating post....");
-      console.log("Error from frontend in updating post: ", error);}
+      console.log("Error from frontend in updating post: ", error.response.data);}
 
    
   };
@@ -52,16 +52,16 @@ const Home = ({ posts, getPosts }) => {
     if (confirm(`Are you sure you want to delete this post id: ${postId}`)) {
       try {
         const deletePost = async () => {
-          const { result } = await axios.delete(BASE_URL + `/post/${postId}`);
-          toast.success("Deleted post successfully");
-          console.log(result);
+          const result = await axios.delete(BASE_URL + `/post/${postId}`);
+          toast.success(result.data.msg);
+          console.log(result.data.msg);
           getPosts();
         };
         deletePost();
        
       } catch (error) {
         toast.error("Error deleting post....");
-        console.log("Error from frontend in deleting post: ", error);
+        console.log("Error from frontend in deleting post: ", error.response.data);
       }
       console.log(`Delete post with ID: ${postId}`);
     }

@@ -12,12 +12,12 @@ const CreatePost = ({getPosts}) => {
     
     const createPost = async ()=>{
       try {
-        const {result} = await axios.post(BASE_URL + "/post",{title : title, content: content})
-        toast.success("Inserted successfully")
-        console.log("Creating Post result are: ", result)
+        const result = await axios.post(BASE_URL + "/post",{title : title, content: content})
+        toast.success(result.data.msg)
+        console.log("Creating Post result are: ", result.data.msg)
         getPosts()
       } catch (error) {
-        console.log("Error from frontend in creating post: ", error);
+        console.log("Error from frontend in creating post: ", error.response.data);
         toast.error("Error.....")
       }
      

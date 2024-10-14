@@ -4,18 +4,26 @@ import CreatePost from "./components/CreatePost";
 import Home from "./components/Home";
 import Navbar from "./components/NavBar";
 import axios from "axios";
-export const BASE_URL = import.meta.env.MODE == "development" ? "http://127.0.0.1:4444/api" : "/api";
+import toast from "react-hot-toast";
+export const BASE_URL =
+  import.meta.env.MODE == "development" ? "http://127.0.0.1:4444/api" : "/api";
 function App() {
   const [posts, setPosts] = useState([]);
-  const getPosts = async ()=>{
-    const {data} = await axios.get(BASE_URL+"/post/")
-    setPosts(data)
-  }
+  const getPosts = async () => {
+    try {
+      const { data } = await axios.get(BASE_URL + "/post/");
+      setPosts(data);
+    } catch (error) {
+      toast.error(err.response.data.msg);
+      console.log(
+        "Error from frontend in get all posts: ",
+        err.response.data
+      );
+    }
+  };
   useEffect(() => {
-   
-    getPosts()
+    getPosts();
   }, []);
-
 
   return (
     <Router>
@@ -24,11 +32,11 @@ function App() {
         <Routes>
           <Route
             path="/"
-            element={<Home posts={posts} getPosts ={getPosts} />}
+            element={<Home posts={posts} getPosts={getPosts} />}
           />
           <Route
             path="/create-post"
-            element={<CreatePost getPosts ={getPosts} />}
+            element={<CreatePost getPosts={getPosts} />}
           />
         </Routes>
       </div>
