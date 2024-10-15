@@ -27,6 +27,7 @@ func main() {
 	Db := database.ConnectDb()
 	controller.SetCollection(Db.Collection("Blogs"))
 	app := gin.Default()
+	app.RedirectTrailingSlash = false
 	// Use Gin CORS middleware with the desired config
 	app.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"http://localhost:5173"},            // Allow specific origin
