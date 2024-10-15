@@ -3,78 +3,92 @@ package controller
 import (
 	"BLOG-APP/server/models"
 	"context"
+	"net/http"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gin-gonic/gin"
+	// "github.com/gofiber/fiber/v2"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
+
 var collection *mongo.Collection
-func SetCollection(c *mongo.Collection){
+
+func SetCollection(c *mongo.Collection) {
 	collection = c
 }
 
-func GetAllPosts(c *fiber.Ctx) error {
+func GetAllPosts(c *gin.Context) {
 	blogs := []models.Blog{}
 
 	result, err := collection.Find(context.Background(), bson.M{})
 	if err != nil {
-		return err
+		c.JSON(http.StatusInternalServerError, gin.H{"msg": "Error fetching posts"})
+		return
 	}
 	defer result.Close(context.Background())
 	for result.Next(context.Background()) {
 		blog := models.Blog{}
 		if err := result.Decode(&blog); err != nil {
-			return c.Status(500).JSON(fiber.Map{"msg": err})
+			c.JSON(http.StatusInternalServerError, gin.H{"msg": err.Error()})
+			return
 		}
 		blogs = append(blogs, blog)
 
 	}
-	return c.Status(200).JSON(blogs)
+	c.JSON(http.StatusOK, blogs)
 }
 
-func GetPost(c *fiber.Ctx) error {
+func GetPost(c *gin.Context) {
 	blog := models.Blog{}
-	id := c.Params("id")
+	id := c.Params.ByName("id")
 	object_id, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
-		return c.Status(404).JSON(fiber.Map{"msg": "Invalid Id, please try again?"})
+		c.JSON(http.StatusNotFound, gin.H{"msg": "Invalid Id, please try again?"})
+		return
 	}
 	filter := bson.M{"_id": object_id}
 	err = collection.FindOne(context.Background(), filter).Decode(&blog)
 	if err != nil {
-		return err
+		c.JSON(http.StatusInternalServerError, gin.H{"msg": "Error fetching posts"})
+		return
 	}
-	return c.Status(200).JSON(blog)
+	c.JSON(http.StatusOK, blog)
 }
-func CreatePost(c *fiber.Ctx) error {
+func CreatePost(c *gin.Context) {
 	blog := new(models.Blog)
-	if err := c.BodyParser(blog); err != nil {
-		return err
+	if err := c.ShouldBindJSON(blog); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": "Error parsing request body"})
+		return
 	}
 	if blog.Title == "" {
-		return c.Status(400).JSON(fiber.Map{"msg": "Please fill post title.."})
+		c.JSON(http.StatusBadRequest, gin.H{"msg": "Please fill post title.."})
+		return
 	}
 	if blog.Content == "" {
-		return c.Status(400).JSON(fiber.Map{"msg": "Please fill post content.."})
+		c.JSON(http.StatusBadRequest, gin.H{"msg": "Please fill post content.."})
+		return
 	}
 	result, err := collection.InsertOne(context.Background(), blog)
 	if err != nil {
-		return c.Status(500).JSON(fiber.Map{"msg": err})
+		c.JSON(http.StatusInternalServerError, gin.H{"msg": "Error fetching post.."})
+		return
 	}
 	blog.ID = result.InsertedID.(primitive.ObjectID)
-	return c.Status(201).JSON(fiber.Map{"msg": "Inserted successfully"})
+	c.JSON(http.StatusOK, gin.H{"msg": "Inserted successfully"})
 }
 
-func UpdatePost(c *fiber.Ctx) error {
+func UpdatePost(c *gin.Context) {
 	blog := new(models.Blog)
-	id := c.Params("id")
+	id := c.Params.ByName("id")
 	object_id, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
-		return c.Status(404).JSON(fiber.Map{"msg": "Invalid Id, please try again?"})
+		c.JSON(http.StatusNotFound, gin.H{"msg": "Invalid Id, please try again?"})
+		return
 	}
-	if err := c.BodyParser(&blog); err != nil {
-		return err
+	if err := c.ShouldBindJSON(&blog); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": "Error parsing request body"})
+		return
 	}
 	update_fields := bson.M{}
 	if blog.Title != "" {
@@ -87,20 +101,24 @@ func UpdatePost(c *fiber.Ctx) error {
 	update := bson.M{"$set": update_fields}
 	_, err = collection.UpdateOne(context.Background(), filter, update)
 	if err != nil {
-		return err
+		c.JSON(http.StatusInternalServerError, gin.H{"msg": "Error fetching post"})
+		return
 	}
-	return c.Status(201).JSON(fiber.Map{"msg": "Updated successfully"})
+	c.JSON(http.StatusOK, gin.H{"msg": "Updated successfully"})
+
 }
-func DeletePost(c *fiber.Ctx) error {
-	id := c.Params("id")
+func DeletePost(c *gin.Context) {
+	id := c.Params.ByName("id")
 	object_id, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
-		return c.Status(404).JSON(fiber.Map{"msg": "Invalid Id, please try again?"})
+		c.JSON(http.StatusNotFound, gin.H{"msg": "Invalid Id, please try again?"})
+		return
 	}
 	filter := bson.M{"_id": object_id}
 	_, err = collection.DeleteOne(context.Background(), filter)
 	if err != nil {
-		return err
+		c.JSON(http.StatusInternalServerError, gin.H{"msg": "Error fetching post"})
+		return
 	}
-	return c.Status(201).JSON(fiber.Map{"msg": "Deleted successfully"})
+	c.JSON(http.StatusOK, gin.H{"msg": "Deleted successfully"})
 }

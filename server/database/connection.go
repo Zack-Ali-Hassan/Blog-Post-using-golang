@@ -27,7 +27,6 @@ func ConnectDb() *mongo.Database {
 	if err != nil {
 		log.Fatal("Connection error: ", err)
 	}
-	defer client.Disconnect(context.Background())
 	err = client.Ping(context.Background(), nil)
 	if err != nil {
 		log.Fatal("Connection error: ", err)

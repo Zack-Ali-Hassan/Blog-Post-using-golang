@@ -12,12 +12,13 @@ function App() {
   const getPosts = async () => {
     try {
       const { data } = await axios.get(BASE_URL + "/post/");
+      console.log("data are: ", data)
       setPosts(data);
     } catch (error) {
-      toast.error(err.response.data.msg);
+      toast.error(error.message);
       console.log(
         "Error from frontend in get all posts: ",
-        err.response.data
+        error.message
       );
     }
   };
