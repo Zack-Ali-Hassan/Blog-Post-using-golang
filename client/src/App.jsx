@@ -6,7 +6,7 @@ import Navbar from "./components/NavBar";
 import axios from "axios";
 import toast from "react-hot-toast";
 export const BASE_URL =
-  import.meta.env.MODE == "development" ? "http://127.0.0.1:4444/api" : "/api";
+  import.meta.env.MODE == "development" ? "http://127.0.0.1:4443/api" : "/api";
 function App() {
   const [posts, setPosts] = useState([]);
   const getPosts = async () => {
