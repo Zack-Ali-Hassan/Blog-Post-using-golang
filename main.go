@@ -11,9 +11,8 @@ import (
 	// "github.com/gofiber/fiber/v2"
 	"github.com/gin-gonic/gin"
 	// "github.com/gofiber/fiber/v2/middleware/cors"
-	// "github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gin-contrib/cors"
 	"github.com/joho/godotenv"
-	// "github.com/gofiber/fiber/v2/middleware/cors"
 )
 
 func main() {
@@ -28,9 +27,12 @@ func main() {
 	Db := database.ConnectDb()
 	controller.SetCollection(Db.Collection("Blogs"))
 	app := gin.Default()
+	// Use Gin CORS middleware with the desired config
 	app.Use(cors.New(cors.Config{
-		AllowOrigins: "http://localhost:5173/",
-		AllowHeaders: "Origin, Content-Type, Accept",
+		AllowOrigins:     []string{"http://localhost:5173"},            // Allow specific origin
+		AllowMethods:     []string{"GET", "POST", "PATCH", "DELETE"},   // Allowed methods
+		AllowHeaders:     []string{"Origin", "Content-Type", "Accept"}, // Allowed headers
+		AllowCredentials: true,                                         // Allow credentials like cookies, etc.
 	}))
 	app.Use(gin.Logger())
 
